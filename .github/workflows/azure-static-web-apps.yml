@@ -25,6 +25,8 @@ jobs:
       run: |
         npm install
         npm run build
+
+        
         
     - name: Deploy to Azure
       uses: Azure/static-web-apps-deploy@v1
@@ -35,3 +37,8 @@ jobs:
         app_location: "frontend"       # Ścieżka do kodu React
         api_location: "backend/api"    # Ścieżka do Azure Functions
         output_location: "build"       # Folder build React
+
+    - name: Install dependencies
+      working-directory: frontend
+      run: npm install --legacy-peer-deps
+
