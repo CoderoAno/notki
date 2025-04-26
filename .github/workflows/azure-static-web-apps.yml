@@ -67,8 +67,8 @@ jobs:
     - name: Create or Update package.json
       working-directory: frontend
       run: |
-        if [ ! -f "package.json" ]; then
-          cat > package.json << 'EOL'
+          if [ ! -f "package.json" ]; then
+            cat > package.json << 'EOL'
           {
             "name": "drawing-chat-app",
             "version": "0.1.0",
@@ -99,7 +99,8 @@ jobs:
             }
           }
           EOL
-        fi
+                  fi
+  
     
     - name: Install Frontend Dependencies
       working-directory: frontend
