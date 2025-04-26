@@ -1,7 +1,9 @@
 {
     "scripts": {
-      "build": "react-scripts build",
-      "build:azure": "react-scripts build" 
+        "build": "react-scripts build",
+        "build:azure": "react-scripts build"
+    },
+    "dependencies": {
+        "web-vitals": "^4.2.4"
     }
-  }
-  
+}
