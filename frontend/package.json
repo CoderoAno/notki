@@ -1,0 +1,7 @@
+{
+    "scripts": {
+      "build": "react-scripts build",
+      "build:azure": "react-scripts build" 
+    }
+  }
+  
