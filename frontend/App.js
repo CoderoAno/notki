@@ -48,8 +48,7 @@ function App() {
       },
       body: JSON.stringify({ nick, text: message })
     })
-      .then(response => response.json())
-      .then(data => {
+      .then(() => {
         setMessages([...messages, { nick, text: message }]);
         setMessage('');
       });
@@ -66,7 +65,7 @@ function App() {
       },
       body: JSON.stringify({ nick, data })
     })
-      .then(response => {
+      .then(() => {
         setDrawings([...drawings, { nick, data }]);
       });
   };

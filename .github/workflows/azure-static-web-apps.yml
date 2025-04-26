@@ -2,11 +2,11 @@ name: Azure Static Web Apps CI/CD
 
 on:
   push:
-    branches: [ "main", "master" ]   # Dla obu nazw głównych gałęzi
+    branches: [ "main", "master" ]  # Obsługa obu typowych nazw gałęzi głównej
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches: [ "main", "master" ]
-  workflow_dispatch:
+  workflow_dispatch:  # Dodaje możliwość ręcznego uruchomienia workflow
 
 jobs:
   build_and_deploy:
@@ -16,20 +16,26 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
-
+    
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: 18.x
-
+    
+    - name: Install React Scripts
+      working-directory: frontend
+      run: npm install react-scripts --save
+    
     - name: Install Frontend Dependencies
       working-directory: frontend
       run: npm install --legacy-peer-deps
-
+    
     - name: Build Frontend
       working-directory: frontend
       run: npm run build
-
+      env:
+        CI: false  # Zapobiega traktowaniu ostrzeżeń jako błędów
+    
     - name: Deploy to Azure
       uses: Azure/static-web-apps-deploy@v1
       with:
@@ -39,3 +45,15 @@ jobs:
         output_location: "build"
       env:
         NPM_CONFIG_LEGACY_PEER_DEPS: true
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "close"
