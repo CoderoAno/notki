@@ -13,6 +13,8 @@ jobs:
     name: Build and Deploy
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    env:
+      NPM_CONFIG_LEGACY_PEER_DEPS: true  # Globalna flaga dla npm - rozwiązuje problem z react-canvas-draw
     
     steps:
     - uses: actions/checkout@v4
@@ -22,13 +24,89 @@ jobs:
       with:
         node-version: 18.x
     
-    - name: Install React Scripts
+    - name: Create Frontend Structure
+      run: |
+        mkdir -p frontend/public
+        mkdir -p frontend/src
+    
+    - name: Create index.html
+      run: |
+        cat > frontend/public/index.html << 'EOL'
+        <!DOCTYPE html>
+        <html lang="pl">
+          <head>
+            <meta charset="utf-8" />
+            <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <meta name="theme-color" content="#000000" />
+            <meta name="description" content="Web app created with Create React App" />
+            <title>Aplikacja do rysowania i czatu</title>
+          </head>
+          <body>
+            <noscript>You need to enable JavaScript to run this app.</noscript>
+            <div id="root"></div>
+          </body>
+        </html>
+        EOL
+    
+    - name: Create index.js
+      run: |
+        cat > frontend/src/index.js << 'EOL'
+        import React from 'react';
+        import ReactDOM from 'react-dom';
+        import App from './App';
+        
+        ReactDOM.render(
+          <React.StrictMode>
+            <App />
+          </React.StrictMode>,
+          document.getElementById('root')
+        );
+        EOL
+    
+    - name: Create or Update package.json
       working-directory: frontend
-      run: npm install react-scripts --save
+      run: |
+        if [ ! -f "package.json" ]; then
+          cat > package.json << 'EOL'
+          {
+            "name": "drawing-chat-app",
+            "version": "0.1.0",
+            "private": true,
+            "dependencies": {
+              "react": "^17.0.2",
+              "react-dom": "^17.0.2",
+              "react-scripts": "5.0.1",
+              "react-canvas-draw": "^1.2.1"
+            },
+            "scripts": {
+              "start": "react-scripts start",
+              "build": "react-scripts build",
+              "test": "react-scripts test",
+              "eject": "react-scripts eject"
+            },
+            "browserslist": {
+              "production": [
+                ">0.2%",
+                "not dead",
+                "not op_mini all"
+              ],
+              "development": [
+                "last 1 chrome version",
+                "last 1 firefox version",
+                "last 1 safari version"
+              ]
+            }
+          }
+          EOL
+        fi
     
     - name: Install Frontend Dependencies
       working-directory: frontend
       run: npm install --legacy-peer-deps
+    
+    - name: Create App.jsx
+      run: cp -f "$(pwd)/src/App.jsx" frontend/src/App.jsx || cp -f "$(pwd)/src/App.js" frontend/src/App.jsx || echo "File not found, will use existing App.jsx"
     
     - name: Build Frontend
       working-directory: frontend
@@ -43,8 +121,8 @@ jobs:
         app_location: "frontend"
         api_location: "backend/api"
         output_location: "build"
-      env:
-        NPM_CONFIG_LEGACY_PEER_DEPS: true
+        skip_app_build: false
+        skip_api_build: false
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
